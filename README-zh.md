@@ -2,6 +2,8 @@
 
 怎么说呢，有人需要，我就做了这么个工具。
 
+![Preview](https://ww1.sinaimg.cn/large/007i4MEmgy1g02dgnvnlgj30bi0efjs7.jpg)
+
 读取本地的谱面和收藏夹数据，与别人分享给你的文件（osu!.db 或 collection.db）做比较，批量下载所有缺失的谱面。
 
 有三个谱面下载源可以使用，分别是官方，血猫和 sayobot。
