@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -48,7 +47,7 @@ type Api struct {
 	BaseUrl string
 }
 
-func (api *Api) init(dbPath ...string) error {
+func (api *Api) init(dbPath ...string) {
 	var err error
 	if len(dbPath) == 1 {
 		api.DB, err = gorm.Open("sqlite3", dbPath[0])
@@ -56,15 +55,14 @@ func (api *Api) init(dbPath ...string) error {
 		api.DB, err = gorm.Open("sqlite3", "querycache.db")
 	}
 	if err != nil {
-		return errors.New("failed to connect database")
+		log.Fatalf("failed to connect database. %T:%s\n", err, err)
 	}
 	if len(conf.OsuApiKey) == 0 {
-		return errors.New("missed osu_api_key value in conf.yaml")
+		log.Fatalf("missed osu_api_key value in conf.yaml. %T:%s\n", err, err)
 	}
 	baseUrl := "https://osu.ppy.sh/api/get_beatmaps?k=%s&h="
 	api.BaseUrl = fmt.Sprintf(baseUrl, conf.OsuApiKey)
 	api.DB.AutoMigrate(&apiBeatmap{})
-	return nil
 }
 
 func (api *Api) destruct() {

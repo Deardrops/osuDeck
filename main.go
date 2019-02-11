@@ -8,6 +8,7 @@ import (
 )
 
 var conf Config
+var api Api
 
 const logFolderPath = "./logs"
 
@@ -15,6 +16,10 @@ func main() {
 	checkAndCreateFolder()
 	conf = Config{}
 	conf.init()
+
+	api = Api{}
+	api.init()
+
 	now := time.Now().Format("20060102_150405")
 	f, err := os.OpenFile(path.Join(logFolderPath, now+".txt"), os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {

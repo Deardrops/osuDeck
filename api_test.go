@@ -20,7 +20,7 @@ func TestQuerySetIdByMd5(t *testing.T) {
 	md5 := "df1b615c3588932f554ed314e1a04924"
 	ID := "660914"
 	api := Api{}
-	api.init("test.db")
+	api.init()
 	defer api.destruct()
 	ID1 := api.QuerySetIdByMd5(md5)
 	if ID1 != ID {

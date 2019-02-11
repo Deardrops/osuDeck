@@ -75,9 +75,11 @@ var localBeatmapMd5s Set
 
 var localBeatmapsetIds BeatmapsetIds
 
+var downloadSetIds Set
+
 func buildGui() {
 	a := app.New()
-	w := a.NewWindow("osuParser")
+	w := a.NewWindow("osu!Deck")
 	localEntries := EntryGroup{
 		list: []Label{
 			{"beatmapset: %d", 0},
@@ -138,6 +140,7 @@ func buildGui() {
 					widget.NewGroup("You can:",
 						widget.NewButton("download missed beatmaps", func() {
 							if len(localBeatmapMd5s) == 0 {
+								dialog.NewInformation("Warning", "Please specified your local osu! folder firstly", w)
 								log.Println("local osu! folder unspecified")
 								return
 							}
@@ -149,7 +152,7 @@ func buildGui() {
 								if err != nil {
 									log.Println(err)
 								}
-								percent := float64(i) / float64(len(missedSetId))
+								percent := float64(i+1) / float64(len(missedSetId))
 								progress.SetValue(percent)
 							}
 						}),
@@ -161,10 +164,37 @@ func buildGui() {
 					collectionDbEntries.createEntries("collection.db"),
 					widget.NewGroup("You can",
 						widget.NewButton("load beatmaps in collection", func() {
-							wipInfo.Show()
+							if len(localBeatmapMd5s) == 0 {
+								dialog.NewInformation("Warning", "Please specified your local osu! folder firstly", w)
+								log.Println("local osu! folder unspecified")
+								return
+							}
+							downloadSetIds = make(Set)
+							list := importedCollectionList.getMissedMd5s(&localBeatmapMd5s)
+							for i, md5 := range list {
+								setId := api.QuerySetIdByMd5(md5)
+								downloadSetIds[setId] = true
+								percent := float64(i+1) / float64(len(list))
+								progress.SetValue(percent)
+							}
 						}),
 						widget.NewButton("download missed beatmaps", func() {
-							wipInfo.Show()
+							if len(downloadSetIds) == 0 {
+								dialog.NewInformation("Warning", "Please load beatmaps firstly", w)
+								return
+							}
+							defer progress.Hide()
+							var i int
+							for setId := range downloadSetIds {
+								log.Println("start download beatmapset", setId)
+								err := downloader.download(setId)
+								if err != nil {
+									log.Println(err)
+								}
+								i++
+								percent := float64(i+1) / float64(len(downloadSetIds))
+								progress.SetValue(percent)
+							}
 						}),
 						widget.NewButton("merge into local collection", func() {
 							wipInfo.Show()
