@@ -1,0 +1,7 @@
+export/
+import/
+download/
+logs/
+.idea/
+*.exe
+conf.yaml

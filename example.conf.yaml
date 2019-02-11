@@ -1,0 +1,7 @@
+osu_api_key: change_to_your_own_osu_api_key
+local_osu_root_path: ""
+osu_db_path: ""
+collection_db_path: ""
+username: change_to_your_osu_username
+password: change_to_your_osu_password
+mirror: bloodcat
