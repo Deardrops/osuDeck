@@ -124,7 +124,7 @@ func buildGui() {
 			}),
 		),
 		widget.NewTabContainer(
-			widget.NewTabItem("osu! folder",
+			widget.NewTabItem("Local",
 				widget.NewVBox(
 					localEntries.createEntries("Local"),
 					widget.NewGroup("You can:",
@@ -159,11 +159,16 @@ func buildGui() {
 					),
 				),
 			),
-			widget.NewTabItem("collection.db",
+			widget.NewTabItem("collection",
 				widget.NewVBox(
 					collectionDbEntries.createEntries("collection.db"),
 					widget.NewGroup("You can",
 						widget.NewButton("load beatmaps in collection", func() {
+							if len(conf.OsuApiKey) == 0 {
+								dialog.NewInformation("Warning", "Please set your osu_api_key in conf.yaml file firstly", w)
+								log.Println("require osu_api_key unspecified")
+								return
+							}
 							if len(localBeatmapMd5s) == 0 {
 								dialog.NewInformation("Warning", "Please specified your local osu! folder firstly", w)
 								log.Println("local osu! folder unspecified")

@@ -58,8 +58,10 @@ func (api *Api) init(dbPath ...string) {
 		log.Fatalf("failed to connect database. %T:%s\n", err, err)
 	}
 	if len(conf.OsuApiKey) == 0 {
-		log.Fatalf("missed osu_api_key value in conf.yaml. %T:%s\n", err, err)
+		log.Printf("missed osu_api_key value in conf.yaml.\n")
+		return
 	}
+	log.Println("osu_api_key imported")
 	baseUrl := "https://osu.ppy.sh/api/get_beatmaps?k=%s&h="
 	api.BaseUrl = fmt.Sprintf(baseUrl, conf.OsuApiKey)
 	api.DB.AutoMigrate(&apiBeatmap{})
@@ -77,6 +79,10 @@ func (api *Api) QuerySetIdByMd5(md5 string) string {
 	}
 	if beatmap.BeatmapId != "" {
 		return beatmap.BeatmapsetId
+	}
+	if len(api.BaseUrl) == 0 {
+		log.Println("please set your osu_api_key in conf.yaml file")
+		return "0"
 	}
 	url := api.BaseUrl + md5
 	_, body, _ := gorequest.New().Get(url).End()
