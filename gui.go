@@ -88,7 +88,8 @@ func buildGui() {
 	downloader := newDownloader(conf.Mirror)
 
 	wipInfo := NewWipInfo(w)
-	progress := widget.NewProgressBar()
+	statusbar := widget.NewLabelWithStyle("ready", fyne.TextAlignCenter, fyne.TextStyle{})
+	progressbar := widget.NewProgressBar()
 
 	w.SetContent(widget.NewVBox(
 		widget.NewHBox(
@@ -96,14 +97,17 @@ func buildGui() {
 			widget.NewButton("osu! folder", func() {
 				conf.LocalOsuRootPath = selectFolderDialog()
 				ParseAndRenderLocalOsu(conf.LocalOsuRootPath, &localEntries)
+				statusbar.SetText("load local osu! folder successfully")
 			}),
 			widget.NewButton("osu!.db", func() {
 				conf.OsuDbPath = selectFileDialog("osu!")
 				ParseAndRenderOsuDbFile(conf.OsuDbPath, &osuDbEntries)
+				statusbar.SetText("load imported osu!.db file successfully")
 			}),
 			widget.NewButton("collection.db", func() {
 				conf.CollectionDbPath = selectFileDialog("colletion")
 				ParseAndRenderCollectionDbFile(conf.CollectionDbPath, &collectionDbEntries)
+				statusbar.SetText("load imported collection.db file successfully")
 			}),
 		),
 		widget.NewTabContainer(
@@ -128,16 +132,18 @@ func buildGui() {
 								return
 							}
 							missedSetId := importedBeatmapList.getMissedMapsetId(&localBeatmapsetIds)
-							defer progress.Hide()
+							defer progressbar.Hide()
 							for i, setId := range missedSetId {
 								log.Println("start download beatmapset", setId)
+								statusbar.SetText("downloading beatmapset " + setId)
 								err := downloader.download(setId)
 								if err != nil {
 									log.Println(err)
 								}
 								percent := float64(i+1) / float64(len(missedSetId))
-								progress.SetValue(percent)
+								progressbar.SetValue(percent)
 							}
+							statusbar.SetText("download finished")
 						}),
 					),
 				),
@@ -161,28 +167,32 @@ func buildGui() {
 							list := importedCollectionList.getMissedMd5s(&localBeatmapMd5s)
 							for i, md5 := range list {
 								setId := api.QuerySetIdByMd5(md5)
+								statusbar.SetText("beatmapset " + setId + " loaded")
 								downloadSetIds[setId] = true
 								percent := float64(i+1) / float64(len(list))
-								progress.SetValue(percent)
+								progressbar.SetValue(percent)
 							}
+							statusbar.SetText("load finished")
 						}),
 						widget.NewButton("download missed beatmaps", func() {
 							if len(downloadSetIds) == 0 {
 								dialog.NewInformation("Warning", "Please load beatmaps firstly", w)
 								return
 							}
-							defer progress.Hide()
+							defer progressbar.Hide()
 							var i int
 							for setId := range downloadSetIds {
 								log.Println("start download beatmapset", setId)
+								statusbar.SetText("downloading beatmapset " + setId)
 								err := downloader.download(setId)
 								if err != nil {
 									log.Println(err)
 								}
 								i++
 								percent := float64(i+1) / float64(len(downloadSetIds))
-								progress.SetValue(percent)
+								progressbar.SetValue(percent)
 							}
+							statusbar.SetText("download finished")
 						}),
 						widget.NewButton("merge into local collection", func() {
 							wipInfo.Show()
@@ -194,7 +204,8 @@ func buildGui() {
 				),
 			),
 		),
-		progress,
+		statusbar,
+		progressbar,
 	))
 	ParseAndRenderLocalOsu(conf.LocalOsuRootPath, &localEntries)
 	ParseAndRenderOsuDbFile(conf.OsuDbPath, &osuDbEntries)
