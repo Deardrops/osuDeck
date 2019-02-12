@@ -1,33 +1,34 @@
 package main
 
 import (
-	"log"
 	"os"
 	"testing"
 )
 
 func TestQuerySetIdByMd5(t *testing.T) {
-	err := os.Remove("test.db")
-	if err != nil {
-		log.Fatal(err)
-	}
+	_ = os.Remove("querycache_test.db")
 	defer func() {
-		err := os.Remove("test.db")
-		if err != nil {
-			log.Fatal(err)
-		}
+		_ = os.Remove("querycache_test.db")
 	}()
-	md5 := "df1b615c3588932f554ed314e1a04924"
-	ID := "660914"
-	api := Api{}
-	api.init()
-	defer api.destruct()
-	ID1 := api.QuerySetIdByMd5(md5)
-	if ID1 != ID {
-		t.Error("error in query to api")
+	conf := newConf()
+
+	var api Api
+	if len(conf.OsuApiKey) == 0 {
+		t.Error("osu_api_key unset")
+	} else {
+		api = newApi(conf.OsuApiKey, "querycache_test.db")
+		defer api.close()
 	}
-	ID2 := api.QuerySetIdByMd5(md5)
-	if ID2 != ID {
-		t.Error("error in query to cache db")
+
+	md5 := "df1b615c3588932f554ed314e1a04924"
+	want := "660914"
+
+	get1 := api.QuerySetIdByMd5(md5)
+	if get1 != want {
+		t.Errorf("error in query to api.\nget: %v\nwant: %v\n", get1, want)
+	}
+	get2 := api.QuerySetIdByMd5(md5)
+	if get2 != want {
+		t.Errorf("error in query to cache db.\nget: %v\nwant: %v\n", get2, want)
 	}
 }

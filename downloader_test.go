@@ -11,15 +11,14 @@ var tests = []struct {
 	in   string
 	out  error
 }{
-	{"ranked", "219380", nil},             // ranked toumei elegy
-	{"unranked", "156445", nil},           // Unrank Masked bitcH
-	{"deleted", "228811", ErrUnavailable}, // deleted kimashitawa
-	{"DMCA", "90784", ErrUnavailable},     // DMCA anhedonia
+	{"ranked", "219380", nil},             // toumei elegy
+	{"unranked", "156445", nil},           // Masked bitcH
+	{"deleted", "228811", ErrUnavailable}, // kimashitawa
+	{"DMCA", "90784", ErrUnavailable},     // anhedonia
 }
 
 func InitTestEnv() {
-	conf = Config{}
-	conf.init()
+	conf = newConf()
 	_ = os.RemoveAll(downloadFolderPath)
 	_ = os.MkdirAll(downloadFolderPath, os.ModePerm)
 }

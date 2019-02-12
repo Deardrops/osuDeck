@@ -11,24 +11,6 @@ import (
 	"path"
 )
 
-func selectFileDialog(name string) string {
-	filename, err := fileDialog.File().Filter(name+" db file", "db").Load()
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-	return filename
-}
-
-func selectFolderDialog() string {
-	directory, err := fileDialog.Directory().Title("osu! folder").Browse()
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-	return directory
-}
-
 type Label struct {
 	text  string
 	value int
@@ -107,6 +89,7 @@ func buildGui() {
 
 	wipInfo := NewWipInfo(w)
 	progress := widget.NewProgressBar()
+
 	w.SetContent(widget.NewVBox(
 		widget.NewHBox(
 			widget.NewLabel("Open: "),
@@ -217,6 +200,7 @@ func buildGui() {
 	ParseAndRenderOsuDbFile(conf.OsuDbPath, &osuDbEntries)
 	ParseAndRenderCollectionDbFile(conf.CollectionDbPath, &collectionDbEntries)
 	localEntries.group.Show()
+
 	w.ShowAndRun()
 }
 
@@ -265,6 +249,24 @@ func ParseAndRenderCollectionDbFile(collectionDbFilePath string, entries *EntryG
 		importedCollectionList.getMapInCollectionTotal(),
 		importedCollectionList.getMissedTotal(&localBeatmapMd5s),
 	)
+}
+
+func selectFileDialog(name string) string {
+	filename, err := fileDialog.File().Filter(name+" db file", "db").Load()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	return filename
+}
+
+func selectFolderDialog() string {
+	directory, err := fileDialog.Directory().Title("osu! folder").Browse()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	return directory
 }
 
 func NewWipInfo(w fyne.Window) dialog.Dialog {

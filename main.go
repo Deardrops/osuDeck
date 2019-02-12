@@ -14,19 +14,23 @@ const logFolderPath = "./logs"
 
 func main() {
 	checkAndCreateFolder()
-	conf = Config{}
-	conf.init()
+	conf = newConf()
+	defer conf.output()
 
-	api = Api{}
-	api.init()
+	if len(conf.OsuApiKey) != 0 {
+		api = newApi(conf.OsuApiKey)
+		defer api.close()
+	} else {
+		log.Printf("missed osu_api_key value in conf.yaml.\n")
+	}
 
 	now := time.Now().Format("20060102_150405")
-	f, err := os.OpenFile(path.Join(logFolderPath, now+".txt"), os.O_RDONLY|os.O_CREATE, 0666)
+	f, err := os.OpenFile(path.Join(logFolderPath, now+".txt"), os.O_APPEND|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.SetOutput(f)
-	defer conf.output()
+
 	buildGui()
 }
 

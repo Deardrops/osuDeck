@@ -47,27 +47,7 @@ type Api struct {
 	BaseUrl string
 }
 
-func (api *Api) init(dbPath ...string) {
-	var err error
-	if len(dbPath) == 1 {
-		api.DB, err = gorm.Open("sqlite3", dbPath[0])
-	} else {
-		api.DB, err = gorm.Open("sqlite3", "querycache.db")
-	}
-	if err != nil {
-		log.Fatalf("failed to connect database. %T:%s\n", err, err)
-	}
-	if len(conf.OsuApiKey) == 0 {
-		log.Printf("missed osu_api_key value in conf.yaml.\n")
-		return
-	}
-	log.Println("osu_api_key imported")
-	baseUrl := "https://osu.ppy.sh/api/get_beatmaps?k=%s&h="
-	api.BaseUrl = fmt.Sprintf(baseUrl, conf.OsuApiKey)
-	api.DB.AutoMigrate(&apiBeatmap{})
-}
-
-func (api *Api) destruct() {
+func (api *Api) close() {
 	_ = api.DB.Close()
 }
 
@@ -99,3 +79,23 @@ func (api *Api) QuerySetIdByMd5(md5 string) string {
 		return "0"
 	}
 }
+
+func newApi(osuApiKey string, paths ...string) Api {
+	api := Api{}
+	var err error
+	if len(paths) == 0 {
+		api.DB, err = gorm.Open("sqlite3", "querycache.db")
+	} else {
+		api.DB, err = gorm.Open("sqlite3", paths[0])
+	}
+	if err != nil {
+		log.Fatalf("failed to connect database. %T:%s\n", err, err)
+	}
+	api.DB.AutoMigrate(&apiBeatmap{})
+
+	baseUrl := "https://osu.ppy.sh/api/get_beatmaps?k=%s&h="
+	api.BaseUrl = fmt.Sprintf(baseUrl, osuApiKey)
+	return api
+}
+
+//TODO: 初始化时检测 osu_api_key 的合法性

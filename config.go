@@ -10,24 +10,31 @@ import (
 )
 
 type Config struct {
-	OsuApiKey        string `yaml:"osu_api_key"`
 	LocalOsuRootPath string `yaml:"local_osu_root_path"`
 	OsuDbPath        string `yaml:"osu_db_path"`
 	CollectionDbPath string `yaml:"collection_db_path"`
+	OsuApiKey        string `yaml:"osu_api_key"`
 	Username         string `yaml:"username"`
 	Password         string `yaml:"password"`
 	Mirror           string `yaml:"mirror"`
+	FilePath         string
 }
 
-const configFilePath = "./conf.yaml"
-
-func (conf *Config) init() {
-	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-		conf.Mirror = "bloodcat"
-		conf.output()
-		return
+func newConf(paths ...string) Config {
+	conf := Config{}
+	var confPath string
+	if len(paths) == 0 {
+		confPath = "./conf.yaml"
+	} else {
+		confPath = paths[0]
 	}
-	buff, err := ioutil.ReadFile(configFilePath)
+	if _, err := os.Stat(confPath); os.IsNotExist(err) {
+		conf.Mirror = "bloodcat"
+		conf.FilePath = confPath
+		conf.output()
+		return conf
+	}
+	buff, err := ioutil.ReadFile(confPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,6 +42,8 @@ func (conf *Config) init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	conf.FilePath = confPath
+	return conf
 }
 
 func (conf *Config) output() {
@@ -46,7 +55,7 @@ func (conf *Config) output() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = ioutil.WriteFile(path.Join(workdir, configFilePath), buff, os.ModePerm)
+	err = ioutil.WriteFile(path.Join(workdir, conf.FilePath), buff, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
