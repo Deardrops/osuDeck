@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -28,7 +29,13 @@ type Downloader interface {
 	Init()
 }
 
-var downloadFolderPath = "./download"
+func downloadFolderPath() string {
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	return filepath.Dir(ex)
+}
 
 type OsuOfficialClient struct {
 	baseUrl string
@@ -38,14 +45,14 @@ func (C *OsuOfficialClient) download(setId string) error {
 	baseUrl := "https://osu.ppy.sh/d/%sn?u=%s&h=%s"
 	password := fmt.Sprintf("%x", md5.Sum([]byte(conf.Password)))
 	downloadUrl := fmt.Sprintf(baseUrl, setId, conf.Username, password)
-	resp, err := grab.Get(downloadFolderPath, downloadUrl)
+	resp, err := grab.Get(path.Join(root, downloadFolder), downloadUrl)
 	if err != nil {
 		log.Printf("%T: %v\n", err, err)
 		return err
 	}
 
 	if resp.Size == -1 {
-		_ = os.Remove(path.Join(downloadFolderPath, setId+"n"))
+		_ = os.Remove(path.Join(path.Join(root, downloadFolder), setId+"n"))
 		return ErrUnavailable
 	}
 	log.Printf("finished %s\n", path.Base(resp.Filename))
@@ -66,7 +73,7 @@ type SayobotClient struct{}
 func (C *SayobotClient) download(setId string) error {
 	baseUrl := "https://txy1.sayobot.cn/download/osz/novideo/%s"
 	downloadUrl := strings.Replace(baseUrl, "%s", setId, 1)
-	resp, err := grab.Get(downloadFolderPath, downloadUrl)
+	resp, err := grab.Get(path.Join(root, downloadFolder), downloadUrl)
 	if err != nil {
 		log.Printf("%T: %v\n", err, err)
 		return err
@@ -107,9 +114,10 @@ func (C *BloodcatClient) download(setId string) error {
 	baseUrl := "https://bloodcat.com/osu/s/%s"
 	downloadUrl := strings.Replace(baseUrl, "%s", setId, 1)
 
-	req, err := grab.NewRequest(downloadFolderPath, downloadUrl)
+	req, err := grab.NewRequest(path.Join(root, downloadFolder), downloadUrl)
 	resp := C.Client.Do(req)
-	if resp.Err() != nil {
+	err = resp.Err()
+	if err != nil {
 		if grab.IsStatusCodeError(err) {
 			log.Printf("expected IsStatusCodeError to return true for %T: %v\n", err, err)
 		} else {

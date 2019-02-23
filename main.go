@@ -4,15 +4,20 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 )
 
 var conf Config
 var api Api
 
-const logFolderPath = "./logs"
+var root string
+
+const logFolder = "logs"
+const downloadFolder = "download"
 
 func main() {
+	root, _ = filepath.Abs("./")
 	checkAndCreateFolder()
 	conf = newConf()
 	defer conf.output()
@@ -25,7 +30,7 @@ func main() {
 	}
 
 	now := time.Now().Format("20060102_150405")
-	f, err := os.OpenFile(path.Join(logFolderPath, now+".txt"), os.O_APPEND|os.O_CREATE, os.ModePerm)
+	f, err := os.OpenFile(path.Join(root, logFolder, now+".txt"), os.O_APPEND|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,8 +41,8 @@ func main() {
 
 func checkAndCreateFolder() {
 	list := []string{
-		downloadFolderPath,
-		logFolderPath,
+		path.Join(root, downloadFolder),
+		path.Join(root, logFolder),
 	}
 	for _, folder := range list {
 		if _, err := os.Stat(folder); os.IsNotExist(err) {
