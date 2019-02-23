@@ -87,7 +87,6 @@ func buildGui() {
 
 	downloader := newDownloader(conf.Mirror)
 
-	wipInfo := NewWipInfo(w)
 	statusbar := widget.NewLabelWithStyle("ready", fyne.TextAlignCenter, fyne.TextStyle{})
 	progressbar := widget.NewProgressBar()
 
@@ -114,11 +113,6 @@ func buildGui() {
 			widget.NewTabItem("Local",
 				widget.NewVBox(
 					localEntries.createEntries("Local"),
-					widget.NewGroup("You can:",
-						widget.NewButton("output all collection with beatmapsetId", func() {
-							wipInfo.Show()
-						}),
-					),
 				),
 			),
 			widget.NewTabItem("osu!db",
@@ -132,7 +126,6 @@ func buildGui() {
 								return
 							}
 							missedSetId := importedBeatmapList.getMissedMapsetId(&localBeatmapsetIds)
-							defer progressbar.Hide()
 							for i, setId := range missedSetId {
 								log.Println("start download beatmapset", setId)
 								statusbar.SetText("downloading beatmapset " + setId)
@@ -167,19 +160,20 @@ func buildGui() {
 							list := importedCollectionList.getMissedMd5s(&localBeatmapMd5s)
 							for i, md5 := range list {
 								setId := api.QuerySetIdByMd5(md5)
-								statusbar.SetText("beatmapset " + setId + " loaded")
+								if setId != "0" {
+									statusbar.SetText("beatmapset " + setId + " loaded")
+								}
 								downloadSetIds[setId] = true
 								percent := float64(i+1) / float64(len(list))
 								progressbar.SetValue(percent)
 							}
-							statusbar.SetText("load finished")
+							statusbar.SetText("load colletion finished")
 						}),
 						widget.NewButton("download missed beatmaps", func() {
 							if len(downloadSetIds) == 0 {
 								dialog.NewInformation("Warning", "Please load beatmaps firstly", w)
 								return
 							}
-							defer progressbar.Hide()
 							var i int
 							for setId := range downloadSetIds {
 								log.Println("start download beatmapset", setId)
@@ -195,10 +189,16 @@ func buildGui() {
 							statusbar.SetText("download finished")
 						}),
 						widget.NewButton("merge into local collection", func() {
-							wipInfo.Show()
-						}),
-						widget.NewButton("output all collection with beatmapid ", func() {
-							wipInfo.Show()
+							if len(localCollectionList.list) == 0 {
+								dialog.NewInformation("Warning", "Please specified your local osu! folder firstly", w)
+								return
+							}
+							if len(importedCollectionList.list) == 0 {
+								dialog.NewInformation("Warning", "Please specified the collection.db file firstly", w)
+								return
+							}
+							localCollectionList.merge(importedCollectionList, path.Join(root, "new_collection.db"))
+							statusbar.SetText("new file save to new_collection.db")
 						}),
 					),
 				),
