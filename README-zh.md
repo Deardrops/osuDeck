@@ -8,7 +8,7 @@
 
 有三个谱面下载源可以使用，分别是官方，血猫和 sayobot。
 
-目前还在早期开发阶段，核心功能已经写好，正在测试找 Bug，同时接受反馈意见，以便确定下一阶段的研发方向。
+目前正在重构整个项目，去掉 GUI 库，改为 服务端程序+Web前端 的方式进行交互。
 
 具体请参阅 [开发记录](https://github.com/Deardrops/osuDeck/issues/1)。
 
@@ -34,9 +34,9 @@ B：**collection.db** 选择别人分享给你的 `collection.db` 文件，然�
 
 ## 配置文件
 
-配置文件名称为 **`conf.yaml`** ，可以使用记事本等文本编辑器打开。
+配置文件名称为 **`conf.yaml`** ，请使用“专业”的文本编辑器打开，例如[Sublime Text](https://www.sublimetext.com/)，[Atom](https://atom.io/)，记事本不行。
 
-配置文件会在第一次运行程序后自动创建，修改配置文件时请关闭程序，修改完成后记得保存。
+配置文件会在第一次运行程序后自动创建，**修改配置文件时请关闭程序**，修改完成后记得保存。
 
 这里有一份[配置文件的示例](https://github.com/Deardrops/osuDeck/blob/master/example.conf.yaml)。
 
